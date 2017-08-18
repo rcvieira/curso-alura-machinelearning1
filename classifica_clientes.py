@@ -52,7 +52,6 @@ resultadoOneVsRest = fit_and_predict("OneVsRest", modeloOneVsRest, treino_dados,
 	teste_dados, teste_marcacoes)
 resultados[resultadoOneVsRest] = modeloOneVsRest
 
-
 from sklearn.multiclass import OneVsOneClassifier
 modeloOneVsOne = OneVsOneClassifier(LinearSVC(random_state = 0))
 resultadoOneVsOne = fit_and_predict("OneVsOne", modeloOneVsOne, treino_dados, treino_marcacoes, 
