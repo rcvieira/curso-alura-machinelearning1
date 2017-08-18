@@ -1,11 +1,11 @@
 from collections import Counter
 import pandas as pd
 
-df = pd.read_csv('dados_buscas.csv')
+df = pd.read_csv('situacao_cliente.csv')
 #df = pd.read_csv('buscas2.csv')
 
-X_df = df[['home','busca','logado']]
-Y_df = df['comprou']
+X_df = df[['recencia','frequencia','semanas_de_inscricao']]
+Y_df = df['situacao']
 
 Xdummies_df = pd.get_dummies(X_df).astype(int)
 Ydummies_df = Y_df
@@ -43,23 +43,39 @@ def fit_and_predict(nome, modelo, treino_dados, treino_marcacoes,
 	print("Taxa de acerto do algoritmo {0}: {1}".format(nome,taxa_de_acerto))
 	return taxa_de_acerto
 
+resultados = {}
+
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.svm import LinearSVC
+modeloOneVsRest = OneVsRestClassifier(LinearSVC(random_state = 0))
+resultadoOneVsRest = fit_and_predict("OneVsRest", modeloOneVsRest, treino_dados, treino_marcacoes, 
+	teste_dados, teste_marcacoes)
+resultados[resultadoOneVsRest] = modeloOneVsRest
+
+
+from sklearn.multiclass import OneVsOneClassifier
+modeloOneVsOne = OneVsOneClassifier(LinearSVC(random_state = 0))
+resultadoOneVsOne = fit_and_predict("OneVsOne", modeloOneVsOne, treino_dados, treino_marcacoes, 
+	teste_dados, teste_marcacoes)
+resultados[resultadoOneVsOne] = modeloOneVsOne
 
 from sklearn.naive_bayes import MultinomialNB
 modeloMultinomialNB = MultinomialNB()
 resultadoMultinomialNB = fit_and_predict("MultinomialNB", modeloMultinomialNB, treino_dados, treino_marcacoes, 
 	teste_dados, teste_marcacoes)
+resultados[resultadoMultinomialNB] = modeloMultinomialNB
 
 from sklearn.ensemble import AdaBoostClassifier
 modeloAdaBoostClassifier = AdaBoostClassifier()
 resultadoAdaBoost = fit_and_predict("AdaBoostClassifier", modeloAdaBoostClassifier, treino_dados, treino_marcacoes, 
 	teste_dados, teste_marcacoes)
+resultados[resultadoAdaBoost] = modeloAdaBoostClassifier
 
-# Executa a validação para o vencedor
-if resultadoMultinomialNB > resultadoAdaBoost:
-	vencedor = modeloMultinomialNB
-else:
-	vencedor = modeloAdaBoostClassifier
+maximo = max(resultados)
+vencedor = resultados[maximo]
 
+print("Vencerdor: ")
+print(vencedor)
 
 resultado = vencedor.predict(validacao_dados)
 acertos = resultado == validacao_marcacoes
